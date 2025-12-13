@@ -2,7 +2,6 @@ import React from 'react';
 import { useCompositor } from '../../hooks/useCompositor';
 import CanvasStage from './CanvasStage';
 import { Layers, ImagePlus, Download, Trash2, Wand2 } from 'lucide-react';
-import imglyRemoveBackground from '@imgly/background-removal';
 
 const ImageCompositor: React.FC = () => {
     const {
@@ -41,7 +40,17 @@ const ImageCompositor: React.FC = () => {
         if (!layer) return;
 
         try {
-            const blob = await imglyRemoveBackground(layer.src);
+            // Dynamic import to avoid build issues with WASM/top-level await if any
+            // @ts-ignore
+            const imgly = await import('@imgly/background-removal');
+            const removeBackground = imgly.default || imgly.removeBackground || imgly;
+
+            if (typeof removeBackground !== 'function') {
+                console.error("imgly export:", imgly);
+                throw new Error("Could not find removeBackground function");
+            }
+
+            const blob = await removeBackground(layer.src);
             const url = URL.createObjectURL(blob);
             updateLayer(selectedId, { src: url });
         } catch (error) {
@@ -65,7 +74,7 @@ const ImageCompositor: React.FC = () => {
     const selectedLayer = layers.find(l => l.id === selectedId);
 
     return (
-        <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+        <div className="flex h-full bg-gray-900 text-white overflow-hidden">
             {/* Sidebar / Toolbar */}
             <div className="w-16 md:w-20 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-4 z-10">
                 <label className="p-3 bg-indigo-600 rounded-lg cursor-pointer hover:bg-indigo-700 transition shadow-lg" title="Add Image">

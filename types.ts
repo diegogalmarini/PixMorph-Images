@@ -25,3 +25,19 @@ export interface ResizeOptions {
 export interface AIOptions {
   prompt: string;
 }
+
+export interface Layer {
+  id: string;
+  type: 'image' | 'text';
+  src: string; // Object URL or Data URL
+  x: number;
+  y: number;
+  rotation: number;
+  scaleX: number;
+  scaleY: number;
+  width?: number; // Original width
+  height?: number; // Original height
+  zIndex: number;
+  visible: boolean;
+  name: string;
+}

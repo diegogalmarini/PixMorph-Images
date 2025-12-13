@@ -1,16 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
+import { Stage, Layer as KonvaLayer, Image as KonvaImage, Transformer } from 'react-konva';
 import useImage from 'use-image';
-import { LayerData } from '../hooks/useCompositor';
+import { Layer } from '../../types';
 
 interface CanvasStageProps {
-    layers: LayerData[];
+    layers: Layer[];
     selectedId: string | null;
     onSelect: (id: string | null) => void;
-    onChange: (id: string, newAttrs: Partial<LayerData>) => void;
+    onChange: (id: string, newAttrs: Partial<Layer>) => void;
 }
 
-const StartImage: React.FC<{ layer: LayerData; isSelected: boolean; onSelect: () => void; onChange: (newAttrs: any) => void }> = ({
+const StartImage: React.FC<{ layer: Layer; isSelected: boolean; onSelect: () => void; onChange: (newAttrs: any) => void }> = ({
     layer,
     isSelected,
     onSelect,
@@ -98,7 +98,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({ layers, selectedId, onSelect,
                 onTouchStart={checkDeselect}
                 className="mx-auto mt-10 shadow-2xl border border-gray-700 bg-white"
             >
-                <Layer>
+                <KonvaLayer>
                     {/* Background Color rect? */}
                     {layers.map((layer, i) => (
                         <StartImage
@@ -109,7 +109,7 @@ const CanvasStage: React.FC<CanvasStageProps> = ({ layers, selectedId, onSelect,
                             onChange={(newAttrs) => onChange(layer.id, newAttrs)}
                         />
                     ))}
-                </Layer>
+                </KonvaLayer>
             </Stage>
         </div>
     );

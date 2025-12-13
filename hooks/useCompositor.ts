@@ -1,28 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Layer } from './types';
-// Note: Actual Layer type definition will be in types.ts, defining here for now
-// or importing if I update types.ts first.
-
-// Let's define the local types for the hook first
-export interface LayerData {
-    id: string;
-    type: 'image' | 'text';
-    src: string; // Object URL or Data URL
-    x: number;
-    y: number;
-    rotation: number;
-    scaleX: number;
-    scaleY: number;
-    width?: number; // Original width
-    height?: number; // Original height
-    zIndex: number;
-    visible: boolean;
-    name: string;
-}
+import { Layer } from '../types';
 
 export const useCompositor = () => {
-    const [layers, setLayers] = useState<LayerData[]>([]);
+    const [layers, setLayers] = useState<Layer[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const stageRef = useRef<any>(null);
 
@@ -31,7 +12,7 @@ export const useCompositor = () => {
         const img = new Image();
         img.src = url;
         img.onload = () => {
-            const newLayer: LayerData = {
+            const newLayer: Layer = {
                 id: uuidv4(),
                 type: 'image',
                 src: url,
@@ -51,7 +32,7 @@ export const useCompositor = () => {
         };
     }, [layers.length]);
 
-    const updateLayer = useCallback((id: string, newAttrs: Partial<LayerData>) => {
+    const updateLayer = useCallback((id: string, newAttrs: Partial<Layer>) => {
         setLayers((prev) =>
             prev.map((layer) => (layer.id === id ? { ...layer, ...newAttrs } : layer))
         );
