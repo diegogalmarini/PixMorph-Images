@@ -9,6 +9,7 @@ interface PreviewAreaProps {
   processedSizeStr: string | null;
   onDownload: () => void;
   fileName: string;
+  originalFormat: string | null;
 }
 
 const PreviewArea: React.FC<PreviewAreaProps> = ({
@@ -18,7 +19,8 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
   originalSizeStr,
   processedSizeStr,
   onDownload,
-  fileName
+  fileName,
+  originalFormat,
 }) => {
   if (!originalUrl) {
     return (
@@ -40,6 +42,7 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
             </span>
             {originalSizeStr && (
               <span className="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-full border border-gray-700">
+                {originalFormat && <span className="mr-1 text-gray-400">{originalFormat} •</span>}
                 {originalSizeStr}
               </span>
             )}
@@ -57,27 +60,27 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
               <SparklesIcon className="w-4 h-4 mr-2" /> Resultado
             </span>
             <div className="flex items-center space-x-2">
-                {processedUrl && (
-                    <span className="text-xs text-gray-500 hidden sm:inline">
-                        {processedDimensions.width}x{processedDimensions.height} px
-                    </span>
-                )}
-                {processedSizeStr && (
-                  <span className="bg-indigo-900/40 text-indigo-200 text-xs px-2 py-1 rounded-full border border-indigo-500/30">
-                    {processedSizeStr}
-                  </span>
-                )}
+              {processedUrl && (
+                <span className="text-xs text-gray-500 hidden sm:inline">
+                  {processedDimensions.width}x{processedDimensions.height} px
+                </span>
+              )}
+              {processedSizeStr && (
+                <span className="bg-indigo-900/40 text-indigo-200 text-xs px-2 py-1 rounded-full border border-indigo-500/30">
+                  {processedSizeStr}
+                </span>
+              )}
             </div>
           </div>
           <div className="bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-indigo-900/30 aspect-square md:aspect-auto flex items-center justify-center relative">
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
             {processedUrl ? (
               <img src={processedUrl} alt="Processed" className="max-w-full max-h-[500px] object-contain relative z-10" />
             ) : (
               <div className="text-gray-600 text-sm">Esperando cambios...</div>
             )}
           </div>
-          
+
           {processedUrl && (
             <button
               onClick={onDownload}

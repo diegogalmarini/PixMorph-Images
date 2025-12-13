@@ -31,15 +31,15 @@ const App: React.FC = () => {
   // Calculate sizes for display
   const originalSizeStr = useMemo(() => {
     if (imageState.file) {
-        return formatFileSize(imageState.file.size);
+      return formatFileSize(imageState.file.size);
     }
     return null;
   }, [imageState.file]);
 
   const processedSizeStr = useMemo(() => {
     if (imageState.processedUrl) {
-        const size = getDataUrlSize(imageState.processedUrl);
-        return formatFileSize(size);
+      const size = getDataUrlSize(imageState.processedUrl);
+      return formatFileSize(size);
     }
     return null;
   }, [imageState.processedUrl]);
@@ -83,7 +83,7 @@ const App: React.FC = () => {
       setIsProcessing(true);
       setError(null);
       const processedUrl = await processImageLocally(imageState.originalUrl, options);
-      
+
       setImageState((prev) => ({
         ...prev,
         processedUrl,
@@ -103,7 +103,7 @@ const App: React.FC = () => {
     try {
       setIsProcessing(true);
       setError(null);
-      
+
       // Call Gemini Service
       // If we have a processed URL (e.g. resized), use that as base, otherwise use original
       const baseImage = imageState.processedUrl || imageState.originalUrl;
@@ -131,13 +131,13 @@ const App: React.FC = () => {
 
   const handleDownload = () => {
     if (!imageState.processedUrl) return;
-    
+
     // Create filename based on format
     const ext = options.format.split('/')[1];
     const nameWithoutExt = imageState.name.substring(0, imageState.name.lastIndexOf('.')) || imageState.name;
     const suffix = activeTab === 'ai' ? '-ai-remix' : '-processed';
     const filename = `${nameWithoutExt}${suffix}.${ext}`;
-    
+
     downloadImage(imageState.processedUrl, filename);
   };
 
@@ -153,31 +153,31 @@ const App: React.FC = () => {
             PixMorph <span className="text-indigo-500">AI Studio</span>
           </h1>
         </div>
-        
+
         {!imageState.file && (
-            <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-lg shadow-indigo-500/20">
+          <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-lg shadow-indigo-500/20">
             Subir Imagen
             <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-            </label>
+          </label>
         )}
-        
+
         {imageState.file && (
-           <label className="cursor-pointer text-gray-400 hover:text-white text-sm flex items-center transition-colors">
-              <span className="mr-2">Cambiar imagen</span>
-              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-           </label>
+          <label className="cursor-pointer text-gray-400 hover:text-white text-sm flex items-center transition-colors">
+            <span className="mr-2">Cambiar imagen</span>
+            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+          </label>
         )}
       </header>
 
       {/* Main Content */}
       <main className="flex flex-1 overflow-hidden relative">
-         {/* Error Toast */}
-         {error && (
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-lg shadow-xl backdrop-blur-sm border border-red-400/50 animate-fade-in-down">
-              {error}
-              <button onClick={() => setError(null)} className="ml-4 font-bold opacity-75 hover:opacity-100">✕</button>
-            </div>
-          )}
+        {/* Error Toast */}
+        {error && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-lg shadow-xl backdrop-blur-sm border border-red-400/50 animate-fade-in-down">
+            {error}
+            <button onClick={() => setError(null)} className="ml-4 font-bold opacity-75 hover:opacity-100">✕</button>
+          </div>
+        )}
 
         {!imageState.file ? (
           <div className="w-full flex flex-col items-center justify-center p-8 text-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-800 via-gray-950 to-gray-950">
@@ -187,12 +187,12 @@ const App: React.FC = () => {
               </div>
               <h2 className="text-2xl font-bold mb-2">Sube tu imagen</h2>
               <p className="text-gray-400 mb-8">Arrastra y suelta o selecciona un archivo para redimensionar, convertir o transformar con IA.</p>
-              
+
               <label className="cursor-pointer block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-indigo-500/25 transform hover:-translate-y-1">
                 Seleccionar Archivo
                 <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
               </label>
-              
+
               <div className="mt-6 flex justify-center space-x-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">
                 <span>JPG</span>
                 <span>•</span>
@@ -222,6 +222,7 @@ const App: React.FC = () => {
               processedDimensions={imageState.processedDimensions}
               originalSizeStr={originalSizeStr}
               processedSizeStr={processedSizeStr}
+              originalFormat={imageState.file ? imageState.file.type.split('/')[1].toUpperCase() : null}
               onDownload={handleDownload}
               fileName={imageState.name}
             />
