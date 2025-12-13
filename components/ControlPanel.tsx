@@ -39,6 +39,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
+  // Determine if quality control is relevant
+  const supportsQuality = options.format === ImageFormat.JPEG || options.format === ImageFormat.WEBP;
+
   return (
     <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
       <div className="mb-6">
@@ -73,16 +76,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* Format Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Formato de Salida</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {[
                 { label: 'JPG', value: ImageFormat.JPEG },
                 { label: 'PNG', value: ImageFormat.PNG },
                 { label: 'WEBP', value: ImageFormat.WEBP },
+                { label: 'GIF', value: ImageFormat.GIF },
               ].map((fmt) => (
                 <button
                   key={fmt.value}
                   onClick={() => setOptions({ ...options, format: fmt.value })}
-                  className={`py-2 px-3 text-sm rounded border ${
+                  className={`py-2 px-1 text-xs md:text-sm rounded border transition-colors ${
                     options.format === fmt.value
                       ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
                       : 'border-gray-600 bg-gray-750 text-gray-300 hover:bg-gray-700'
@@ -134,20 +138,29 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           {/* Quality Slider */}
-          <div>
+          <div className={`${!supportsQuality ? 'opacity-50 grayscale' : ''} transition-opacity duration-200`}>
             <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium text-gray-300">Calidad</label>
+              <label className="text-sm font-medium text-gray-300">
+                Compresión / Calidad
+                {!supportsQuality && <span className="text-xs font-normal text-gray-500 ml-2">(No disponible en {options.format.split('/')[1].toUpperCase()})</span>}
+              </label>
               <span className="text-sm text-indigo-400">{Math.round(options.quality * 100)}%</span>
             </div>
             <input
               type="range"
               min="0.1"
               max="1"
-              step="0.1"
+              step="0.05"
               value={options.quality}
               onChange={(e) => setOptions({ ...options, quality: parseFloat(e.target.value) })}
-              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+              disabled={!supportsQuality}
+              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
+                supportsQuality ? 'bg-gray-700 accent-indigo-500' : 'bg-gray-800 accent-gray-600'
+              }`}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Menor calidad = Menor tamaño de archivo
+            </p>
           </div>
 
           <button

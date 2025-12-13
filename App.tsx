@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { ImageFormat, ImageState, ResizeOptions } from './types';
-import { readFileAsDataURL, getImageDimensions, processImageLocally, downloadImage } from './utils/imageUtils';
+import { readFileAsDataURL, getImageDimensions, processImageLocally, downloadImage, getDataUrlSize, formatFileSize } from './utils/imageUtils';
 import { editImageWithAI } from './services/geminiService';
 import ControlPanel from './components/ControlPanel';
 import PreviewArea from './components/PreviewArea';
@@ -20,13 +20,29 @@ const App: React.FC = () => {
     width: 0,
     height: 0,
     maintainAspectRatio: true,
-    quality: 0.9,
+    quality: 0.8, // Default 80% quality
     format: ImageFormat.JPEG,
   });
 
   const [activeTab, setActiveTab] = useState<'basic' | 'ai'>('basic');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Calculate sizes for display
+  const originalSizeStr = useMemo(() => {
+    if (imageState.file) {
+        return formatFileSize(imageState.file.size);
+    }
+    return null;
+  }, [imageState.file]);
+
+  const processedSizeStr = useMemo(() => {
+    if (imageState.processedUrl) {
+        const size = getDataUrlSize(imageState.processedUrl);
+        return formatFileSize(size);
+    }
+    return null;
+  }, [imageState.processedUrl]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -183,6 +199,8 @@ const App: React.FC = () => {
                 <span>PNG</span>
                 <span>•</span>
                 <span>WEBP</span>
+                <span>•</span>
+                <span>GIF</span>
               </div>
             </div>
           </div>
@@ -202,6 +220,8 @@ const App: React.FC = () => {
               originalUrl={imageState.originalUrl}
               processedUrl={imageState.processedUrl}
               processedDimensions={imageState.processedDimensions}
+              originalSizeStr={originalSizeStr}
+              processedSizeStr={processedSizeStr}
               onDownload={handleDownload}
               fileName={imageState.name}
             />

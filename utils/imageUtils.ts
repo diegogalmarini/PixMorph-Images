@@ -55,3 +55,23 @@ export const downloadImage = (url: string, filename: string) => {
   link.click();
   document.body.removeChild(link);
 };
+
+/**
+ * Calculates the approximate size in bytes of a Base64 Data URL.
+ */
+export const getDataUrlSize = (dataUrl: string): number => {
+  const base64String = dataUrl.split(',')[1] || dataUrl;
+  const padding = (base64String.match(/=/g) || []).length;
+  return (base64String.length * 0.75) - padding;
+};
+
+/**
+ * Formats bytes into human readable string (KB, MB).
+ */
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};

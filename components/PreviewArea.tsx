@@ -5,6 +5,8 @@ interface PreviewAreaProps {
   originalUrl: string | null;
   processedUrl: string | null;
   processedDimensions: { width: number; height: number };
+  originalSizeStr: string | null;
+  processedSizeStr: string | null;
   onDownload: () => void;
   fileName: string;
 }
@@ -13,6 +15,8 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
   originalUrl,
   processedUrl,
   processedDimensions,
+  originalSizeStr,
+  processedSizeStr,
   onDownload,
   fileName
 }) => {
@@ -34,6 +38,11 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
             <span className="text-sm font-medium text-gray-400 flex items-center">
               <FileImage className="w-4 h-4 mr-2" /> Original
             </span>
+            {originalSizeStr && (
+              <span className="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-full border border-gray-700">
+                {originalSizeStr}
+              </span>
+            )}
           </div>
           <div className="bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-800 aspect-square md:aspect-auto flex items-center justify-center relative group">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
@@ -47,11 +56,18 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
             <span className="text-sm font-medium text-indigo-400 flex items-center">
               <SparklesIcon className="w-4 h-4 mr-2" /> Resultado
             </span>
-            {processedUrl && (
-                <span className="text-xs text-gray-500">
-                    {processedDimensions.width}x{processedDimensions.height} px
-                </span>
-            )}
+            <div className="flex items-center space-x-2">
+                {processedUrl && (
+                    <span className="text-xs text-gray-500 hidden sm:inline">
+                        {processedDimensions.width}x{processedDimensions.height} px
+                    </span>
+                )}
+                {processedSizeStr && (
+                  <span className="bg-indigo-900/40 text-indigo-200 text-xs px-2 py-1 rounded-full border border-indigo-500/30">
+                    {processedSizeStr}
+                  </span>
+                )}
+            </div>
           </div>
           <div className="bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-indigo-900/30 aspect-square md:aspect-auto flex items-center justify-center relative">
              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
