@@ -170,7 +170,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-1 overflow-hidden relative">
+      <main className="flex flex-col-reverse md:flex-row flex-1 overflow-hidden relative">
         {/* Error Toast */}
         {error && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-lg shadow-xl backdrop-blur-sm border border-red-400/50 animate-fade-in-down">

@@ -43,7 +43,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const supportsQuality = options.format === ImageFormat.JPEG || options.format === ImageFormat.WEBP;
 
   return (
-    <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
+    <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-[50vh] md:h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white mb-1">Editor</h2>
         <p className="text-gray-400 text-sm">Configura tu imagen</p>
@@ -53,18 +53,16 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <div className="flex bg-gray-750 p-1 rounded-lg mb-6">
         <button
           onClick={() => setActiveTab('basic')}
-          className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-            activeTab === 'basic' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'
-          }`}
+          className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'basic' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'
+            }`}
         >
           <ArrowRightLeft className="w-4 h-4 inline mr-2" />
           Básico
         </button>
         <button
           onClick={() => setActiveTab('ai')}
-          className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-            activeTab === 'ai' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'
-          }`}
+          className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'ai' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'
+            }`}
         >
           <Sparkles className="w-4 h-4 inline mr-2" />
           IA Mágica
@@ -86,11 +84,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <button
                   key={fmt.value}
                   onClick={() => setOptions({ ...options, format: fmt.value })}
-                  className={`py-2 px-1 text-xs md:text-sm rounded border transition-colors ${
-                    options.format === fmt.value
+                  className={`py-2 px-1 text-xs md:text-sm rounded border transition-colors ${options.format === fmt.value
                       ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
                       : 'border-gray-600 bg-gray-750 text-gray-300 hover:bg-gray-700'
-                  }`}
+                    }`}
                 >
                   {fmt.label}
                 </button>
@@ -104,9 +101,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               <label className="text-sm font-medium text-gray-300">Dimensiones (px)</label>
               <button
                 onClick={() => setOptions({ ...options, maintainAspectRatio: !options.maintainAspectRatio })}
-                className={`text-xs p-1 rounded ${
-                  options.maintainAspectRatio ? 'text-indigo-400 bg-indigo-400/10' : 'text-gray-500 hover:text-gray-300'
-                }`}
+                className={`text-xs p-1 rounded ${options.maintainAspectRatio ? 'text-indigo-400 bg-indigo-400/10' : 'text-gray-500 hover:text-gray-300'
+                  }`}
                 title="Mantener relación de aspecto"
               >
                 {options.maintainAspectRatio ? 'Aspecto Bloqueado' : 'Aspecto Libre'}
@@ -154,9 +150,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={options.quality}
               onChange={(e) => setOptions({ ...options, quality: parseFloat(e.target.value) })}
               disabled={!supportsQuality}
-              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
-                supportsQuality ? 'bg-gray-700 accent-indigo-500' : 'bg-gray-800 accent-gray-600'
-              }`}
+              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${supportsQuality ? 'bg-gray-700 accent-indigo-500' : 'bg-gray-800 accent-gray-600'
+                }`}
             />
             <p className="text-xs text-gray-500 mt-1">
               Menor calidad = Menor tamaño de archivo
