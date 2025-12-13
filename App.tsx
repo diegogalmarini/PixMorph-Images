@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { UploadCloud, Github } from 'lucide-react';
+import { UploadCloud, Github, Layers } from 'lucide-react';
 import { ImageFormat, ImageState, ResizeOptions } from './types';
 import { readFileAsDataURL, getImageDimensions, processImageLocally, downloadImage, getDataUrlSize, formatFileSize } from './utils/imageUtils';
 import { editImageWithAI } from './services/geminiService';
 import ControlPanel from './components/ControlPanel';
 import PreviewArea from './components/PreviewArea';
+import ImageCompositor from './components/compositor/ImageCompositor';
 
 // Global Translations
 const translations = {
@@ -32,6 +33,7 @@ const translations = {
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<'es' | 'en'>('es');
+  const [view, setView] = useState<'editor' | 'compositor'>('editor');
   const t = translations[lang];
 
   const [imageState, setImageState] = useState<ImageState>({
