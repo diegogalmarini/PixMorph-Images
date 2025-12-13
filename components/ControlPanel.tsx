@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ImageFormat, ResizeOptions } from '../types';
-import { Sparkles, ArrowRightLeft, Github } from 'lucide-react';
+import { Sparkles, ArrowRightLeft } from 'lucide-react';
 
 interface ControlPanelProps {
   originalDimensions: { width: number; height: number };
@@ -11,6 +11,7 @@ interface ControlPanelProps {
   isProcessing: boolean;
   activeTab: 'basic' | 'ai';
   setActiveTab: (tab: 'basic' | 'ai') => void;
+  lang: 'es' | 'en';
 }
 
 // Simple translation dictionary
@@ -73,10 +74,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onProcessAI,
   isProcessing,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  lang
 }) => {
   const [aiPrompt, setAiPrompt] = useState('');
-  const [lang, setLang] = useState<'es' | 'en'>('es');
   const t = translations[lang];
 
   // Update height/width based on aspect ratio when one changes
@@ -98,38 +99,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-[50vh] md:h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1">{t.editor}</h2>
-          <p className="text-gray-400 text-sm">{t.tagline}</p>
-        </div>
-
-        {/* Helper Buttons: Language & GitHub */}
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setLang('en')}
-            className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border transition-colors ${lang === 'en' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'}`}
-            title="English"
-          >
-            EN
-          </button>
-          <button
-            onClick={() => setLang('es')}
-            className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border transition-colors ${lang === 'es' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'}`}
-            title="Español"
-          >
-            ES
-          </button>
-          <a
-            href="https://github.com/diegogalmarini/PixMorph-Images"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 rounded flex items-center justify-center bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 transition-colors"
-            title="View Source on GitHub"
-          >
-            <Github size={16} />
-          </a>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white mb-1">{t.editor}</h2>
+        <p className="text-gray-400 text-sm">{t.tagline}</p>
       </div>
 
       {/* Tabs */}
