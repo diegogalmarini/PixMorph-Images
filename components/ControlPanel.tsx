@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { ImageFormat, ResizeOptions, AIOptions } from '../types';
-import { Sparkles, ArrowRightLeft, Maximize2, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { ImageFormat, ResizeOptions } from '../types';
+import { Sparkles, ArrowRightLeft, Github } from 'lucide-react';
 
 interface ControlPanelProps {
   originalDimensions: { width: number; height: number };
@@ -13,6 +13,58 @@ interface ControlPanelProps {
   setActiveTab: (tab: 'basic' | 'ai') => void;
 }
 
+// Simple translation dictionary
+const translations = {
+  es: {
+    editor: "Editor",
+    tagline: "Configura tu imagen",
+    basic: "Básico",
+    magicAI: "IA Mágica",
+    outputFormat: "Formato de Salida",
+    dimensions: "Dimensiones (px)",
+    aspectLocked: "Aspecto Bloqueado",
+    aspectFree: "Aspecto Libre",
+    width: "Ancho",
+    height: "Alto",
+    original: "Original",
+    quality: "Compresión / Calidad",
+    notAvailableIn: "No disponible en",
+    lowerQuality: "Menor calidad = Menor tamaño de archivo",
+    applyChanges: "Aplicar Cambios",
+    processing: "Procesando...",
+    aiTitle: "Edición Generativa",
+    aiDesc: "Utiliza Gemini 2.5 para transformar tu imagen. Describe cómo quieres modificarla.",
+    promptLabel: "Instrucción (Prompt)",
+    promptPlaceholder: "Ej: Conviértelo en un dibujo estilo cyberpunk, o añade un sombrero...",
+    transformWithAI: "Transformar con IA",
+    generating: "Generando con IA..."
+  },
+  en: {
+    editor: "Editor",
+    tagline: "Configure your image",
+    basic: "Basic",
+    magicAI: "Magic AI",
+    outputFormat: "Output Format",
+    dimensions: "Dimensions (px)",
+    aspectLocked: "Aspect Locked",
+    aspectFree: "Aspect Free",
+    width: "Width",
+    height: "Height",
+    original: "Original",
+    quality: "Compression / Quality",
+    notAvailableIn: "Not available in",
+    lowerQuality: "Lower quality = Smaller file size",
+    applyChanges: "Apply Changes",
+    processing: "Processing...",
+    aiTitle: "Generative Edit",
+    aiDesc: "Use Gemini 2.5 to transform your image. Describe how you want to modify it.",
+    promptLabel: "Instruction (Prompt)",
+    promptPlaceholder: "Ex: Turn it into a cyberpunk drawing, or add a hat...",
+    transformWithAI: "Transform with AI",
+    generating: "Generating with AI..."
+  }
+};
+
 const ControlPanel: React.FC<ControlPanelProps> = ({
   originalDimensions,
   options,
@@ -24,6 +76,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setActiveTab
 }) => {
   const [aiPrompt, setAiPrompt] = useState('');
+  const [lang, setLang] = useState<'es' | 'en'>('es');
+  const t = translations[lang];
 
   // Update height/width based on aspect ratio when one changes
   const handleDimensionChange = (dimension: 'width' | 'height', value: number) => {
@@ -44,9 +98,38 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-[50vh] md:h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-1">Editor</h2>
-        <p className="text-gray-400 text-sm">Configura tu imagen</p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-1">{t.editor}</h2>
+          <p className="text-gray-400 text-sm">{t.tagline}</p>
+        </div>
+
+        {/* Helper Buttons: Language & GitHub */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setLang('en')}
+            className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border transition-colors ${lang === 'en' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'}`}
+            title="English"
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLang('es')}
+            className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border transition-colors ${lang === 'es' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'}`}
+            title="Español"
+          >
+            ES
+          </button>
+          <a
+            href="https://github.com/diegogalmarini/PixMorph-Images"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 rounded flex items-center justify-center bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 transition-colors"
+            title="View Source on GitHub"
+          >
+            <Github size={16} />
+          </a>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -57,7 +140,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             }`}
         >
           <ArrowRightLeft className="w-4 h-4 inline mr-2" />
-          Básico
+          {t.basic}
         </button>
         <button
           onClick={() => setActiveTab('ai')}
@@ -65,7 +148,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             }`}
         >
           <Sparkles className="w-4 h-4 inline mr-2" />
-          IA Mágica
+          {t.magicAI}
         </button>
       </div>
 
@@ -73,7 +156,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         <div className="space-y-6 flex-1">
           {/* Format Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Formato de Salida</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.outputFormat}</label>
             <div className="grid grid-cols-4 gap-2">
               {[
                 { label: 'JPG', value: ImageFormat.JPEG },
@@ -98,19 +181,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* Dimensions */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-gray-300">Dimensiones (px)</label>
+              <label className="text-sm font-medium text-gray-300">{t.dimensions}</label>
               <button
                 onClick={() => setOptions({ ...options, maintainAspectRatio: !options.maintainAspectRatio })}
                 className={`text-xs p-1 rounded ${options.maintainAspectRatio ? 'text-indigo-400 bg-indigo-400/10' : 'text-gray-500 hover:text-gray-300'
                   }`}
                 title="Mantener relación de aspecto"
               >
-                {options.maintainAspectRatio ? 'Aspecto Bloqueado' : 'Aspecto Libre'}
+                {options.maintainAspectRatio ? t.aspectLocked : t.aspectFree}
               </button>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Ancho</label>
+                <label className="text-xs text-gray-500 block mb-1">{t.width}</label>
                 <input
                   type="number"
                   value={options.width}
@@ -119,7 +202,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Alto</label>
+                <label className="text-xs text-gray-500 block mb-1">{t.height}</label>
                 <input
                   type="number"
                   value={options.height}
@@ -129,7 +212,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Original: {originalDimensions.width} x {originalDimensions.height}
+              {t.original}: {originalDimensions.width} x {originalDimensions.height}
             </p>
           </div>
 
@@ -137,8 +220,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className={`${!supportsQuality ? 'opacity-50 grayscale' : ''} transition-opacity duration-200`}>
             <div className="flex justify-between mb-2">
               <label className="text-sm font-medium text-gray-300">
-                Compresión / Calidad
-                {!supportsQuality && <span className="text-xs font-normal text-gray-500 ml-2">(No disponible en {options.format.split('/')[1].toUpperCase()})</span>}
+                {t.quality}
+                {!supportsQuality && <span className="text-xs font-normal text-gray-500 ml-2">({t.notAvailableIn} {options.format.split('/')[1].toUpperCase()})</span>}
               </label>
               <span className="text-sm text-indigo-400">{Math.round(options.quality * 100)}%</span>
             </div>
@@ -154,7 +237,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 }`}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Menor calidad = Menor tamaño de archivo
+              {t.lowerQuality}
             </p>
           </div>
 
@@ -163,7 +246,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             disabled={isProcessing}
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center mt-auto"
           >
-            {isProcessing ? 'Procesando...' : 'Aplicar Cambios'}
+            {isProcessing ? t.processing : t.applyChanges}
           </button>
         </div>
       ) : (
@@ -171,19 +254,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-lg p-4">
             <h3 className="text-indigo-300 font-semibold mb-2 flex items-center">
               <Sparkles className="w-4 h-4 mr-2" />
-              Edición Generativa
+              {t.aiTitle}
             </h3>
             <p className="text-sm text-indigo-200/80">
-              Utiliza Gemini 2.5 para transformar tu imagen. Describe cómo quieres modificarla.
+              {t.aiDesc}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Instrucción (Prompt)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.promptLabel}</label>
             <textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Ej: Conviértelo en un dibujo estilo cyberpunk, o añade un sombrero..."
+              placeholder={t.promptPlaceholder}
               className="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white h-32 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
             />
           </div>
@@ -199,10 +282,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Generando con IA...
+                {t.generating}
               </span>
             ) : (
-              'Transformar con IA'
+              t.transformWithAI
             )}
           </button>
         </div>
