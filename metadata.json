@@ -1,0 +1,5 @@
+{
+  "name": "PixMorph AI Studio",
+  "description": "Una potente herramienta web para redimensionar, convertir formatos y transformar imágenes utilizando procesamiento local y la IA de Gemini.",
+  "requestFramePermissions": []
+}
