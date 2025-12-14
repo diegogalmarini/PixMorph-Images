@@ -187,21 +187,7 @@ const App: React.FC = () => {
 
         <div className="flex items-center space-x-4">
           {/* Navigation Tabs */}
-          <div className="bg-gray-800 rounded-lg p-1 flex space-x-1 mr-4">
-            <button
-              onClick={() => setView('editor')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition ${view === 'editor' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
-            >
-              Editor
-            </button>
-            {/* Studio hidden temporarily as per user request */}
-            {/* <button
-              onClick={() => setView('compositor')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition ${view === 'compositor' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
-            >
-              <div className="flex items-center"><Layers size={14} className="mr-1" /> Studio</div>
-            </button> */}
-          </div>
+
 
           {/* Global Action Buttons */}
           <div className="flex space-x-2 mr-2">
