@@ -42,6 +42,10 @@ export const processImageLocally = async (
     ctx.fillRect(0, 0, width, height);
   }
 
+  // Explicitly set dimensions for SVG or consistent resizing behavior
+  img.width = width;
+  img.height = height;
+
   ctx.drawImage(img, 0, 0, width, height);
 
   if (format === ImageFormat.SVG) {
