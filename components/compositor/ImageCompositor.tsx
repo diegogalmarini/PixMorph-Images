@@ -186,12 +186,13 @@ const ImageCompositor: React.FC = () => {
 
         {/* Canvas Area */}
         <div
-          className="flex-1 overflow-auto flex items-center justify-center p-8 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px]"
+          className="flex-1 overflow-auto flex items-center justify-center p-8 bg-[#0a0a0a]"
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          style={{ backgroundImage: 'radial-gradient(circle, #2a2a2a 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
-          {/* Center the canvas visually */}
-          <div className="shadow-2xl border border-gray-800 bg-white">
+          {/* Canvas Container: Immersive (No white box) */}
+          <div className="shadow-2xl shadow-indigo-500/10 rounded-lg overflow-hidden border border-white/5 bg-transparent relative">
             <CanvasStage
               layers={layers}
               selectedId={selectedId}
