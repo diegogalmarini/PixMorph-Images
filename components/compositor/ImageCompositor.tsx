@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react'; // Added useState, useEffect
+import React, { useState, useCallback } from 'react';
 import { useCompositor } from '../../hooks/useCompositor';
 import CanvasStage from './CanvasStage';
-import { Layers, ImagePlus, Download, Trash2, Wand2, Sparkles, XCircle } from 'lucide-react'; // Added Sparkles, XCircle
-import { editImageWithAI } from '../../services/geminiService'; // Import AI service
+import { Layers, Download, Trash2, Wand2 } from 'lucide-react';
+import { editImageWithAI } from '../../services/geminiService';
+import ChatInterface, { Message } from './ChatInterface';
+import { v4 as uuidv4 } from 'uuid';
 
 const ImageCompositor: React.FC = () => {
   const {
@@ -15,25 +17,12 @@ const ImageCompositor: React.FC = () => {
     stageRef
   } = useCompositor();
 
-  const [prompt, setPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: 'welcome', role: 'assistant', text: '¡Hola! Soy tu asistente de diseño. Arrastra imágenes o descríbeme qué quieres crear.' }
+  ]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
-        // Prevent backspace from navigating back if not in an input
-        const tag = (e.target as HTMLElement).tagName.toUpperCase();
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
-          removeLayer(selectedId);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, removeLayer]);
-
+  // --- Logic Helpers ---
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -45,222 +34,196 @@ const ImageCompositor: React.FC = () => {
     files.forEach(file => {
       if (file.type.startsWith('image/')) {
         addLayer(file);
+        addMessage('user', `He añadido la imagen: ${file.name}`);
+        addMessage('assistant', 'Imagen añadida al lienzo.');
       }
     });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      addLayer(e.target.files[0]);
-    }
+  const addMessage = (role: 'user' | 'assistant', text: string, attachments?: string[]) => {
+    setMessages(prev => [...prev, { id: uuidv4(), role, text, attachments }]);
   };
 
-  const handleRemoveBackground = async () => {
-    if (!selectedId) return;
-    const layer = layers.find(l => l.id === selectedId);
-    if (!layer) return;
+  const handleRemoveBackground = async (layerId: string) => {
+    const layer = layers.find(l => l.id === layerId);
+    if (!layer) return false;
 
     try {
-      // Dynamic import to avoid build issues with WASM/top-level await if any
       // @ts-ignore
       const imgly = await import('@imgly/background-removal');
       const removeBackground = imgly.default || imgly.removeBackground || imgly;
 
-      if (typeof removeBackground !== 'function') {
-        console.error("imgly export:", imgly);
-        throw new Error("Could not find removeBackground function");
-      }
+      if (typeof removeBackground !== 'function') throw new Error("Bg removal lib error");
 
       const blob = await removeBackground(layer.src);
       const url = URL.createObjectURL(blob);
-      updateLayer(selectedId, { src: url });
+      updateLayer(layerId, { src: url });
+      return true;
     } catch (error) {
-      console.error("Failed to remove background", error);
-      alert("Error removing background");
+      console.error("Bg remove fail", error);
+      return false;
     }
   };
 
-  const handleGenerativeIntegration = async () => {
-    if (!stageRef.current || !prompt.trim()) return;
+  const handleGenerativeIntegration = async (prompt: string) => {
+    if (!stageRef.current) return false;
 
     try {
-      setIsGenerating(true);
-      // 1. Capture current canvas state
-      // Deselect first to capture clean state without transformers
+      // 1. Capture clean state
       const currentSelection = selectedId;
       setSelectedId(null);
+      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for deselect render
 
-      // Wait a tick for render update (React state update is async)
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const dataUrl = stageRef.current.toDataURL({ pixelRatio: 1.5 });
 
-      const dataUrl = stageRef.current.toDataURL({ pixelRatio: 1.5 }); // Good quality for AI input
-
-      // 2. Send to AI
-      // We use the existing geminiService function
+      // 2. AI Gen
       const resultUrl = await editImageWithAI(dataUrl, prompt);
 
-      // 3. Add result as new layer
-      const img = new Image();
-      img.src = resultUrl;
-      img.onload = () => {
-        // We can fetch blob from url to create a file-like object or just pass url logic if we adapt addLayer
-        // For now, let's just cheat and reuse addLayer logic by fetching the blob?
-        // Or better, let's manually add the layer since we have the URL logic inside useCompositor exposed via addLayer(File).
-        // Actually, let's fetch it to a blob to treat it consistently.
-        fetch(resultUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "AI_Composition.png", { type: "image/png" });
-            addLayer(file);
-          });
-      };
+      // 3. Add Layer
+      const response = await fetch(resultUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "AI_Gen.png", { type: "image/png" });
+      addLayer(file);
 
+      return true;
     } catch (error) {
-      console.error("Generation failed", error);
-      alert("Error generating image. Check your API Key.");
+      console.error("Gen fail", error);
+      return false;
+    }
+  };
+
+  // --- Main Chat Handler ---
+  const handleSendMessage = async (text: string, files?: File[]) => {
+    // 1. User Message
+    const attachmentUrls = files ? files.map(f => URL.createObjectURL(f)) : [];
+    addMessage('user', text, attachmentUrls);
+    setIsProcessing(true);
+
+    try {
+      // 2. Handle Attachments
+      if (files && files.length > 0) {
+        files.forEach(f => addLayer(f));
+        addMessage('assistant', `Añadí ${files.length} imagen(es) al lienzo.`);
+        setIsProcessing(false);
+        return;
+      }
+
+      // 3. Handle Text Commands (Simple Heuristic / Router)
+      const lowerText = text.toLowerCase();
+
+      // Case A: Background Removal intent
+      if (lowerText.includes('quita') && lowerText.includes('fondo')) {
+        if (selectedId) {
+          const success = await handleRemoveBackground(selectedId);
+          if (success) addMessage('assistant', 'Fondo eliminado de la capa seleccionada.');
+          else addMessage('assistant', 'Hubo un error al quitar el fondo.');
+        } else {
+          addMessage('assistant', 'Por favor, selecciona primero una imagen en el lienzo (haz clic en ella) para quitarle el fondo.');
+        }
+      }
+      // Case B: Delete intent
+      else if (lowerText.includes('borra') || lowerText.includes('elimina')) {
+        if (selectedId) {
+          removeLayer(selectedId);
+          addMessage('assistant', 'Capa eliminada.');
+        } else {
+          addMessage('assistant', 'Selecciona una capa primero para borrarla.');
+        }
+      }
+      // Case C: Generative intent (Default fallback for descriptions)
+      else {
+        // Assume it's a creative prompt
+        const success = await handleGenerativeIntegration(text);
+        if (success) addMessage('assistant', 'Aquí tienes el resultado integrado. Se ha añadido como una nueva capa.');
+        else addMessage('assistant', 'Lo siento, no pude generar esa integración. Verifica tu API Key o inténtalo de nuevo.');
+      }
+
+    } catch (err) {
+      addMessage('assistant', 'Ocurrió un error inesperado.');
     } finally {
-      setIsGenerating(false);
+      setIsProcessing(false);
     }
   };
 
 
   const handleExport = () => {
     if (stageRef.current) {
-      const uri = stageRef.current.toDataURL({ pixelRatio: 2 }); // High quality export
+      const uri = stageRef.current.toDataURL({ pixelRatio: 2 });
       const link = document.createElement('a');
-      link.download = 'composition.png';
+      link.download = 'pixmorph_composition.png';
       link.href = uri;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      addMessage('assistant', 'Imagen exportada satisfactoriamente. 🎨');
     }
   };
 
-  const selectedLayer = layers.find(l => l.id === selectedId);
-
   return (
-    <div className="flex h-full bg-gray-900 text-white overflow-hidden">
-      {/* Sidebar / Toolbar */}
-      <div className="w-16 md:w-20 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-4 z-10 shrink-0">
-        <label className="p-3 bg-indigo-600 rounded-lg cursor-pointer hover:bg-indigo-700 transition shadow-lg" title="Add Image">
-          <ImagePlus size={24} />
-          <input type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
-        </label>
+    <div className="flex h-full bg-gray-950 text-white overflow-hidden font-sans">
 
-        <button
-          className={`p - 3 rounded - lg transition ${selectedId ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-800 text-gray-500 cursor-not-allowed'} `}
-          disabled={!selectedId}
-          title="Remove Background"
-          onClick={handleRemoveBackground}
-        >
-          <Wand2 size={24} />
-        </button>
-
-        <button
-          className={`p - 3 rounded - lg transition ${selectedId ? 'bg-red-900/50 hover:bg-red-900 text-red-200' : 'bg-gray-800 text-gray-500 cursor-not-allowed'} `}
-          disabled={!selectedId}
-          title="Delete Layer (Del)"
-          onClick={() => selectedId && removeLayer(selectedId)}
-        >
-          <Trash2 size={24} />
-        </button>
-
-        <div className="flex-1"></div>
-
-        <button
-          className="p-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition shadow-lg"
-          title="Export Composition"
-          onClick={handleExport}
-        >
-          <Download size={24} />
-        </button>
-      </div>
-
-      {/* AI Prompt Input Area */}
-      <div className="w-64 bg-gray-850 border-r border-gray-700 flex flex-col p-4 z-10 space-y-4">
-        <h3 className="text-sm font-bold text-gray-300 flex items-center">
-          <Sparkles size={16} className="mr-2 text-indigo-400" />
-          Caja Mágica
-        </h3>
-        <p className="text-xs text-gray-400">
-          1. Organiza tus capas.
-          <br />
-          2. Describe la escena final.
-          <br />
-          3. ¡Fusiona con IA!
-        </p>
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Ej: Hombre sentado en el sofá mirando un móvil, iluminación cinemática..."
-          className="w-full h-32 bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white resize-none focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+      {/* LEFT: Chat Interface (30% width, min 300px) */}
+      <div className="w-[30%] min-w-[320px] max-w-[450px] flex flex-col h-full bg-gray-900 border-r border-gray-800 z-10 shadow-xl">
+        <ChatInterface
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          isProcessing={isProcessing}
         />
-        <button
-          onClick={handleGenerativeIntegration}
-          disabled={isGenerating || !prompt.trim()}
-          className={`w - full py - 2 rounded font - semibold text - sm transition - all shadow - lg flex justify - center items - center
-                    ${isGenerating || !prompt.trim()
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white'
-            } `}
+      </div>
+
+      {/* RIGHT: Canvas & Tools */}
+      <div className="flex-1 relative bg-gray-950 flex flex-col">
+
+        {/* Top Toolbar (Floating) */}
+        <div className="absolute top-4 right-4 flex space-x-2 z-20">
+          <button
+            onClick={handleExport}
+            className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg border border-gray-700 flex items-center text-sm font-medium transition-all"
+          >
+            <Download size={16} className="mr-2" /> Exportar
+          </button>
+        </div>
+
+        {/* Canvas Area */}
+        <div
+          className="flex-1 overflow-auto flex items-center justify-center p-8 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px]"
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
         >
-          {isGenerating ? (
-            <>Processing...</>
-          ) : (
-            <>
-              <Sparkles size={16} className="mr-2" />
-              Generar / Integrar
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Main Workspace */}
-      <div
-        className="flex-1 relative bg-gray-950 flex flex-col"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        <div className="absolute inset-0 overflow-auto flex items-center justify-center p-8">
-          <CanvasStage
-            layers={layers}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onChange={updateLayer}
-          />
+          {/* Center the canvas visually */}
+          <div className="shadow-2xl border border-gray-800 bg-white">
+            <CanvasStage
+              layers={layers}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onChange={updateLayer}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Layers Panel */}
-      <div className="w-56 bg-gray-800 border-l border-gray-700 flex flex-col z-10 shrink-0">
-        <div className="p-4 border-b border-gray-700 font-bold flex items-center">
-          <Layers className="mr-2" size={18} /> Capas
-        </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {[...layers].reverse().map((layer) => (
-            <div
-              key={layer.id}
-              onClick={() => setSelectedId(layer.id)}
-              className={`p - 2 rounded cursor - pointer flex items - center space - x - 2 group relative ${selectedId === layer.id ? 'bg-indigo-600' : 'hover:bg-gray-700'} `}
+        {/* Floating Context Bar (Bottom Centered or near selection? - Lets stick to bottom for simplicity) */}
+        {selectedId && (
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-2xl border border-gray-700 flex items-center space-x-4 z-20 animate-fade-in-up">
+            <span className="text-xs font-semibold uppercase text-gray-400">Selección</span>
+            <div className="h-4 w-px bg-gray-600"></div>
+            <button
+              onClick={() => handleRemoveBackground(selectedId).then(ok => ok && addMessage('assistant', 'Fondo eliminado.'))}
+              className="hover:text-indigo-400 transition-colors flex items-center text-sm"
+              title="Quitar Fondo"
             >
-              <img src={layer.src} className="w-8 h-8 object-cover rounded bg-white" alt="layer thumb" />
-              <span className="text-sm truncate flex-1">{layer.name}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); removeLayer(layer.id); }}
-                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white transition-opacity"
-                title="Delete"
-              >
-                <XCircle size={14} />
-              </button>
-            </div>
-          ))}
-          {layers.length === 0 && (
-            <div className="text-gray-500 text-sm text-center mt-4">
-              Arrastra imágenes aquí
-            </div>
-          )}
-        </div>
+              <Wand2 size={16} className="mr-1" /> Mágia
+            </button>
+            <button
+              onClick={() => { removeLayer(selectedId); addMessage('assistant', 'Elemento borrado.'); }}
+              className="hover:text-red-400 transition-colors flex items-center text-sm"
+              title="Borrar"
+            >
+              <Trash2 size={16} className="mr-1" /> Borrar
+            </button>
+          </div>
+        )}
       </div>
+
     </div>
   );
 };
