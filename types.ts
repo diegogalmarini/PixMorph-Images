@@ -3,6 +3,7 @@ export enum ImageFormat {
   JPEG = 'image/jpeg',
   WEBP = 'image/webp',
   GIF = 'image/gif',
+  SVG = 'image/svg+xml',
 }
 
 export interface ImageState {

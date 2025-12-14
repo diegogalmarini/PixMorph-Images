@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ImageFormat, ResizeOptions } from '../types';
-import { Sparkles, ArrowRightLeft } from 'lucide-react';
+import { Sparkles, ArrowRightLeft, UploadCloud } from 'lucide-react';
 
 interface ControlPanelProps {
   originalDimensions: { width: number; height: number };
@@ -12,6 +12,7 @@ interface ControlPanelProps {
   activeTab: 'basic' | 'ai';
   setActiveTab: (tab: 'basic' | 'ai') => void;
   lang: 'es' | 'en';
+  onReset: () => void;
 }
 
 // Simple translation dictionary
@@ -38,7 +39,8 @@ const translations = {
     promptLabel: "Instrucción (Prompt)",
     promptPlaceholder: "Ej: Conviértelo en un dibujo estilo cyberpunk, o añade un sombrero...",
     transformWithAI: "Transformar con IA",
-    generating: "Generando con IA..."
+    generating: "Generando con IA...",
+    uploadNew: "Subir imagen",
   },
   en: {
     editor: "Editor",
@@ -62,7 +64,8 @@ const translations = {
     promptLabel: "Instruction (Prompt)",
     promptPlaceholder: "Ex: Turn it into a cyberpunk drawing, or add a hat...",
     transformWithAI: "Transform with AI",
-    generating: "Generating with AI..."
+    generating: "Generating with AI...",
+    uploadNew: "Upload image",
   }
 };
 
@@ -75,7 +78,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   isProcessing,
   activeTab,
   setActiveTab,
-  lang
+  lang,
+  onReset
 }) => {
   const [aiPrompt, setAiPrompt] = useState('');
   const t = translations[lang];
@@ -99,9 +103,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div className="bg-gray-850 border-r border-gray-750 p-6 flex flex-col h-[50vh] md:h-full overflow-y-auto w-full md:w-80 lg:w-96 shrink-0">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-1">{t.editor}</h2>
-        <p className="text-gray-400 text-sm">{t.tagline}</p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-1">{t.editor}</h2>
+          <p className="text-gray-400 text-sm">{t.tagline}</p>
+        </div>
+        <button
+          onClick={onReset}
+          className="text-xs flex items-center bg-gray-750 hover:bg-gray-700 text-gray-300 py-1.5 px-3 rounded-full border border-gray-600 transition-colors"
+          title={t.uploadNew}
+        >
+          <UploadCloud size={14} className="mr-1.5" />
+          {t.uploadNew}
+        </button>
       </div>
 
       {/* Tabs */}
@@ -129,19 +143,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* Format Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">{t.outputFormat}</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-1">
               {[
                 { label: 'JPG', value: ImageFormat.JPEG },
                 { label: 'PNG', value: ImageFormat.PNG },
                 { label: 'WEBP', value: ImageFormat.WEBP },
                 { label: 'GIF', value: ImageFormat.GIF },
+                { label: 'SVG', value: ImageFormat.SVG },
               ].map((fmt) => (
                 <button
                   key={fmt.value}
                   onClick={() => setOptions({ ...options, format: fmt.value })}
                   className={`py-2 px-1 text-xs md:text-sm rounded border transition-colors ${options.format === fmt.value
-                      ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
-                      : 'border-gray-600 bg-gray-750 text-gray-300 hover:bg-gray-700'
+                    ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+                    : 'border-gray-600 bg-gray-750 text-gray-300 hover:bg-gray-700'
                     }`}
                 >
                   {fmt.label}

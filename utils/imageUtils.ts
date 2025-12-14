@@ -44,6 +44,19 @@ export const processImageLocally = async (
 
   ctx.drawImage(img, 0, 0, width, height);
 
+  if (format === ImageFormat.SVG) {
+    const dataUrl = canvas.toDataURL('image/png'); // Get PNG data to embed
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+      <image href="${dataUrl}" width="${width}" height="${height}" />
+    </svg>`;
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
+
   return canvas.toDataURL(format, quality);
 };
 

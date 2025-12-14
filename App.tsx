@@ -105,6 +105,25 @@ const App: React.FC = () => {
     }
   };
 
+  const resetImage = () => {
+    setImageState({
+      file: null,
+      originalUrl: null,
+      processedUrl: null,
+      originalDimensions: { width: 0, height: 0 },
+      processedDimensions: { width: 0, height: 0 },
+      name: '',
+    });
+    setOptions({
+      width: 0,
+      height: 0,
+      maintainAspectRatio: true,
+      quality: 0.8,
+      format: ImageFormat.JPEG,
+    });
+    setError(null);
+  };
+
   const handleProcessLocal = async () => {
     if (!imageState.originalUrl) return;
 
@@ -266,6 +285,7 @@ const App: React.FC = () => {
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
                   lang={lang}
+                  onReset={resetImage}
                 />
                 <PreviewArea
                   originalUrl={imageState.originalUrl}
