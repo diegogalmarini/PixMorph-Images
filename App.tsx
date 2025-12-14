@@ -17,7 +17,7 @@ const translations = {
     changeImg: "Cambiar imagen",
     appTitle: "PixMorph",
     appSubtitle: "AI Studio",
-    formats: ["JPG", "PNG", "WEBP", "GIF"]
+    formats: ["JPG", "PNG", "WEBP", "GIF", "SVG"]
   },
   en: {
     uploadTitle: "Upload your image",
@@ -27,7 +27,7 @@ const translations = {
     changeImg: "Change image",
     appTitle: "PixMorph",
     appSubtitle: "AI Studio",
-    formats: ["JPG", "PNG", "WEBP", "GIF"]
+    formats: ["JPG", "PNG", "WEBP", "GIF", "SVG"]
   }
 };
 
