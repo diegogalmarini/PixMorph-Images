@@ -186,7 +186,6 @@ const App: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Navigation Tabs */}
 
 
           {/* Global Action Buttons */}
@@ -216,19 +215,7 @@ const App: React.FC = () => {
             </a>
           </div>
 
-          {!imageState.file && view === 'editor' && (
-            <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-lg shadow-indigo-500/20">
-              {t.uploadBtn}
-              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-            </label>
-          )}
 
-          {imageState.file && view === 'editor' && (
-            <label className="cursor-pointer text-gray-400 hover:text-white text-sm flex items-center transition-colors">
-              <span className="mr-2">{t.changeImg}</span>
-              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-            </label>
-          )}
         </div>
       </header>
 
