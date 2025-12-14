@@ -194,12 +194,13 @@ const App: React.FC = () => {
             >
               Editor
             </button>
-            <button
+            {/* Studio hidden temporarily as per user request */}
+            {/* <button
               onClick={() => setView('compositor')}
               className={`px-3 py-1 rounded-md text-sm font-medium transition ${view === 'compositor' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
             >
               <div className="flex items-center"><Layers size={14} className="mr-1" /> Studio</div>
-            </button>
+            </button> */}
           </div>
 
           {/* Global Action Buttons */}

@@ -7,7 +7,8 @@ export const editImageWithAI = async (
   prompt: string
 ): Promise<string> => {
   // Check for API Key at runtime
-  const apiKey = process.env.API_KEY || (import.meta as any).env?.GEMINI_API_KEY; // Fallback to Vite env if needed
+  // Check for API Key at runtime (Support both VITE_ prefix and plain for different envs)
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || (import.meta as any).env?.GEMINI_API_KEY || process.env.API_KEY) as string;
 
   if (!apiKey) {
     throw new Error("API Key is missing. Please set GEMINI_API_KEY in your deployment settings.");
